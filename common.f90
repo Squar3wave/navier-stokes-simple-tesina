@@ -87,28 +87,35 @@
   ! MY CODE ADDITIONS
   !---------------------------------------------------------------------------
 
-  subroutine file_reader(out_var)
+  subroutine matrix_file_reader(out_var, path_name)
 
-    integer strlen, rows, cols
+    integer                           ::strlen, rows, cols
     real, dimension(:,:), allocatable :: x
     real, dimension(:,:), intent(out) :: out_var
-
-    OPEN (1, file = 'matrix.txt', status='old', action='read')
+    character(len=50), intent(in)     :: path_name
+    
+    OPEN (49, file = path_name, status='old', action='read')
 
     !Count the number of columns
 
-    read(1,'(a)') buffer !read first line WITH SPACES INCLUDED
-    REWIND(1) !Get back to the file beginning
+    read(49,'(a)') buffer !read first line WITH SPACES INCLUDED
+    REWIND(49) !Get back to the file beginning
 
     strlen = len(buffer) !Find the REAL length of a string read
+
     do while (buffer(strlen:strlen) == ' ')
+    
       strlen = strlen - 1
+    
     enddo
 
     cols=0 !Count the number of spaces in the first line
+    
     do i=0,strlen
       if (buffer(i:i) == ' ') then
+    
         cols=cols+1
+    
       endif
     enddo
 
@@ -118,24 +125,24 @@
 
     rows = 0 !Count the number of lines in a file
     DO
-      READ(1,*,iostat=io)
+      READ(49,*,iostat=io)
       IF (io/=0) EXIT
       rows = rows + 1
     END DO
 
-    REWIND(1)
+    REWIND(49)
 
-    print*, 'Number of rows:', rows
-    print*, 'Number of columns:', cols
+    print *, 'Number of rows:', rows
+    print *, 'Number of columns:', cols
 
     allocate(x(rows,cols))
 
     do I=1,rows,1
-      read(1,*) x(I,:)
+      read(49,*) x(I,:)
       write(*,*) x(I,:)
     enddo
 
-    CLOSE (1)
+    CLOSE (49)
 
     out_var = x
 
