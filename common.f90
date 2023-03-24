@@ -23,6 +23,7 @@
    public :: init_grid, init_cells
    public :: init_exact, write_exact
    public :: out_array, out_paraview_vtk
+   public :: file_reader
    
    integer,  parameter, public :: dp = selected_real_kind(14,100) 
    real(dp), parameter    :: Pi =  3.14159265358979323844_dp
@@ -87,65 +88,71 @@
   ! MY CODE ADDITIONS
   !---------------------------------------------------------------------------
 
-  subroutine matrix_file_reader(out_var, path_name)
+  subroutine file_reader(out_var, path_name, path_len)
 
-    integer                           ::strlen, rows, cols
-    real, dimension(:,:), allocatable :: x
-    real, dimension(:,:), intent(out) :: out_var
-    character(len=50), intent(in)     :: path_name
+    integer                                        :: strlen, rows, cols, i, io
+    character(len=dp), dimension(:,:), allocatable :: x
+    character(len=dp), dimension(:,:), intent(out) :: out_var
+    integer, intent(in)                            :: path_len
+    character(len=path_len), intent(in)            :: path_name
+    character(128)                                 :: buffer
     
-    OPEN (49, file = path_name, status='old', action='read')
+    open(49, file = path_name, status='old', action='read')
 
     !Count the number of columns
 
     read(49,'(a)') buffer !read first line WITH SPACES INCLUDED
-    REWIND(49) !Get back to the file beginning
+    rewind(49) !Get back to the file beginning
 
     strlen = len(buffer) !Find the REAL length of a string read
 
-    do while (buffer(strlen:strlen) == ' ')
-    
+    do while ( buffer(strlen:strlen) == ' ')
+
       strlen = strlen - 1
-    
-    enddo
+
+    end do
 
     cols=0 !Count the number of spaces in the first line
     
-    do i=0,strlen
+    do i=1,strlen
       if (buffer(i:i) == ' ') then
-    
+      
         cols=cols+1
-    
-      endif
-    enddo
+      
+      end if
+    end do
 
     cols = cols+1
 
     !Count the number of rows
-
+    
     rows = 0 !Count the number of lines in a file
-    DO
-      READ(49,*,iostat=io)
-      IF (io/=0) EXIT
+
+    do
+    
+      read(49,*,iostat=io)
+      if (io/=0) exit
       rows = rows + 1
-    END DO
+    
+    end do
 
-    REWIND(49)
+    rewind(49)
 
-    print *, 'Number of rows:', rows
+    print *, 'Number of rows:   ', rows
     print *, 'Number of columns:', cols
 
-    allocate(x(rows,cols))
+    allocate(x(0:(rows-1),0:(cols-1)))
 
-    do I=1,rows,1
+    do I=0,rows-1,1
       read(49,*) x(I,:)
-      write(*,*) x(I,:)
-    enddo
+    end do
 
-    CLOSE (49)
+    close(49)
 
     out_var = x
 
+    deallocate(x)
+    
   end subroutine
 
   !---------------------------------------------------------------------------

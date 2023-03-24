@@ -1,0 +1,9 @@
+Re--------- 600
+Niter------ 500
+CM--------- CDS
+alpha------ 0.85
+beta------- 0.10
+omega------ 1.00
+Poiss_acc-- 1e-7
+Poiss_iter- 500
+Rie-Chow--- y

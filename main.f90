@@ -22,24 +22,41 @@ Program Main
   use solvers 
   implicit none
   
-  integer :: Niter, Niter_last, Niter_print, j, i, k
-  character(64) :: arg
-  character(1) :: ch
-
-  if(iargc()<3) then
-   print*,'ns Re Niter CDS|UPD|HLPA [filename=* alfa=* beta=* Poiss_acc=* Poiss_iter=* RhieChow=Y|N]'
-   stop  
-  endif
- 
-  call getarg(1,arg)
-  read(arg,*) Re
+  integer                               :: Niter, Niter_last, Niter_print, j, i, k
+  character(64)                         :: arg
+  character(1)                          :: ch
+  character(26)                         :: input_data_path
+  character(len=dp), dimension(0:8,0:1) :: input_data
   
-  call getarg(2,arg)
-  read(arg,*) Niter
+  input_data_path="input_files/input_data.dat"
 
-  ! Select computation mode
-  call getarg(3,arg)
-  mode = 'U'
+  call file_reader(input_data, input_data_path, len(input_data_path))
+  
+  read(input_data(0,1), '(f10.0)') Re
+  read(input_data(1,1), '(i10.0)') Niter
+  read(input_data(3,1), '(f10.0)') alfa
+  read(input_data(4,1), '(f10.0)') beta
+  read(input_data(5,1), '(f10.0)') omega
+  read(input_data(6,1), '(f10.0)') Poiss_acc
+  read(input_data(7,1), '(i10.0)') Poiss_iter
+  
+  mode = input_data(2,1)
+  ch   = input_data(8,1)
+  
+! if(iargc()<3) then
+!   print*,'ns Re Niter CDS|UPD|HLPA [filename=* alfa=* beta=* Poiss_acc=* Poiss_iter=* RhieChow=Y|N]'
+!   stop  
+! endif
+ 
+!  call getarg(1,arg)
+!  read(arg,*) Re
+  
+!  call getarg(2,arg)
+!  read(arg,*) Niter
+
+!  ! Select computation mode
+!  call getarg(3,arg)
+!  mode = 'U'
 
   if (trim(arg)=='CDS') mode = 'C'
   if (trim(arg)=='UPD') mode = 'U'
@@ -47,12 +64,12 @@ Program Main
 
   readstart = .false.
   filename = ''
-  alfa = 0.85_dp
-  beta = 0.10_dp
-  omega = 1.00_dp
-  Poiss_iter = 500
-  Poiss_acc = 1.d-7
-  ch = 'Y'
+!  alfa = 0.85_dp
+!  beta = 0.10_dp
+!  omega = 1.00_dp
+!  Poiss_iter = 500
+!  Poiss_acc = 1.d-7
+!  ch = 'Y'
 
   do i = 4, iargc()
     call getarg(i,arg)
@@ -62,17 +79,17 @@ Program Main
       if (trim(filename) /= '') then
          readstart = .true.
       endif  
-    elseif (arg(1:5)=='alfa=') then
+    elseif (arg(1:5) =='alfa=      ') then
       read(arg(6:),*) alfa
-    elseif (arg(1:5)=='beta=') then
+    elseif (arg(1:5) =='beta=      ') then
       read(arg(6:),*) beta 
-    elseif (arg(1:6)=='omega=') then
+    elseif (arg(1:6) =='omega=     ') then
       read(arg(7:),*) omega 
     elseif (arg(1:11)=='Poiss_iter=') then
       read(arg(12:),*) Poiss_iter 
-    elseif (arg(1:10)=='Poiss_acc=') then
+    elseif (arg(1:10)=='Poiss_acc= ') then
       read(arg(11:),*) Poiss_acc
-    elseif (arg(1:9)=='RhieChow=') then
+    elseif (arg(1:9) =='RhieChow=  ') then
       read(arg(10:),*) ch
     endif
   end do
