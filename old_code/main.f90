@@ -59,12 +59,56 @@ Program Main
   read(grid_data(3,1), '(i10.0)') X_length
   read(grid_data(4,1), '(i10.0)') Y_length
   
+! if(iargc()<3) then
+!   print*,'ns Re Niter CDS|UPD|HLPA [filename=* alfa=* beta=* Poiss_acc=* Poiss_iter=* RhieChow=Y|N]'
+!   stop  
+! endif
+ 
+!  call getarg(1,arg)
+!  read(arg,*) Re
+  
+!  call getarg(2,arg)
+!  read(arg,*) Niter
+
+!  ! Select computation mode
+!  call getarg(3,arg)
+!  mode = 'U'
+
   if (trim(arg)=='CDS') mode = 'C'
   if (trim(arg)=='UPD') mode = 'U'
   if (trim(arg)=='HLPA') mode = 'H'
 
   readstart = .false.
+  filename = ''
+!  alfa = 0.85_dp
+!  beta = 0.10_dp
+!  omega = 1.00_dp
+!  Poiss_iter = 500
+!  Poiss_acc = 1.d-7
+!  ch = 'Y'
 
+  do i = 4, iargc()
+    call getarg(i,arg)
+
+    if (arg(1:9)=='filename=') then
+      read(arg(10:),*) filename
+      if (trim(filename) /= '') then
+         readstart = .true.
+      endif  
+    elseif (arg(1:5) =='alfa=') then
+      read(arg(6:),*) alfa
+    elseif (arg(1:5) =='beta=') then
+      read(arg(6:),*) beta 
+    elseif (arg(1:6) =='omega=') then
+      read(arg(7:),*) omega 
+    elseif (arg(1:11)=='Poiss_iter=') then
+      read(arg(12:),*) Poiss_iter 
+    elseif (arg(1:10)=='Poiss_acc=') then
+      read(arg(11:),*) Poiss_acc
+    elseif (arg(1:9) =='RhieChow=') then
+      read(arg(10:),*) ch
+    endif
+  end do
 
   if (ch=='N') then 
     rhiechow = .false.

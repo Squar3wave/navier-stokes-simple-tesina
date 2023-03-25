@@ -40,6 +40,14 @@
    real(dp) :: SLy = 1.0_dp
 
    ! Grid definition  
+!   integer, public :: NXmax = 121   !numero nodi in x
+!   integer, public :: NYmax = 121   !numero nodi in y
+!   integer, public :: NXmaxC   !numero dei dof in x
+!   integer, public :: NYmaxC   !numero dei dof in y
+!   integer, public :: NX_center = 60
+!   integer, public :: NY_center = 26
+!   integer, public :: X_length = 2
+!   integer, public :: Y_length = 50
 
    integer, public :: NXmax  !numero nodi in x
    integer, public :: NYmax   !numero nodi in y
@@ -139,8 +147,8 @@
 
     rewind(49)
 
-!    print *, 'Number of rows:   ', rows
-!    print *, 'Number of columns:', cols
+    print *, 'Number of rows:   ', rows
+    print *, 'Number of columns:', cols
 
     allocate(x(0:(rows-1),0:(cols-1)))
 
