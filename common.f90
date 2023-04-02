@@ -159,6 +159,113 @@
   !---------------------------------------------------------------------------
   !---------------------------------------------------------------------------
 
+  !***************************************************************************
+  !***************************************************************************
+
+  subroutine init_grid()
+
+    integer :: i, j
+    real(dp) :: dx, dy
+
+    allocate(X(NXmax))
+    allocate(Y(NYmax))
+
+    dx = SLx/(NXmax-1)
+    dy = SLy/(NYmax-1)
+
+    ! Definizione di una griglia di punti regolare (1..NXmax, 1..NYmax)
+    DO i=1, NXmax
+       X(i) = dx * (i-1)
+    ENDDO
+
+    DO j=1, NYmax
+       Y(j) = dy * (j-1)
+    ENDDO
+    ! ----------------------------------------------------------------
+
+    open (22,file='GRID.dat') !scrittura dei punti della griglia su file
+      WRITE(22,*)'VARIABLES = "X", "Y" '
+      WRITE (22,*)' ZONE I=' ,NXmax, ', J=', NYmax, ', F=POINT'
+      DO I=1, NXmax
+         WRITE (22,*) X(I)
+      ENDDO
+      DO J=1, NYmax
+         WRITE (22,*) Y(J)
+      ENDDO
+    close(22)
+
+  end subroutine init_grid
+
+
+  subroutine init_cells()
+
+    integer :: i, j, n
+
+    !calculation Xc,Yc (calcolo delle posizioni dei volumetti) ------------------
+    NXmaxC = NXmax + 1
+    NYmaxC = NYmax + 1
+    allocate(Xc(NXmaxC))
+    allocate(Yc(NYmaxC))
+
+    do i=2,NXmax
+        Xc(i)=( X(i-1) + X(i) ) * 0.5_dp
+    end do
+
+    do j=2,NYmax
+        Yc(j)=(  Y(j-1) + Y(j) ) * 0.5_dp
+    enddo
+
+    Xc(1) = X(1)
+    Xc(NXmaxC) = X(NXmax)
+
+    Yc(1) = Y(1)
+    Yc(NYmaxC) = Y(NYmax)
+
+  end subroutine init_cells
+
+  !****************************************************************************
+  ! co-located grid definition
+  ! + represent original grid X(i,j), Y(i,j)
+  ! o represent colocal grid Xc, Yc
+  !
+  !  1  2     3                                NXmax+1
+  !  o--o--+--o--+--o--+--o--+--o--+--o--+--o--o
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+==*=====*=====*==+-----+-----+
+  !  o  o  |  o  *  X  |  X  |  X  *  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+           flusso in presenza di un ostacolo
+  !  o  o  |  o  *  X  |  X  |  X  *  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  *  X  |  X  |  X  *  o  |  o  o
+  !  +-----+-----+==*=====*=====*==+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  +-----+-----+-----+-----+-----+-----+-----+
+  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
+  !  o--o--+--o--+--o--+--o--+--o--+--o--+--o--o
+  !  1     2     3     4                       NXmax (nodi)
+  !
+  !  0.0                                       1.0
+  !****************************************************************************
+  !****************************************************************************
+
+
+
   !****************************************************************************
   !****************************************************************************
   subroutine init_workspace(Nx,Ny)
@@ -275,109 +382,7 @@
       end do
     end do
   end subroutine init_obstacle
-  !***************************************************************************
-  !****************************************************************************
-  subroutine init_grid()
 
-    integer :: i, j
-    real(dp) :: dx, dy
-   
-    allocate(X(NXmax))
-    allocate(Y(NYmax))
-
-    dx = SLx/(NXmax-1)
-    dy = SLy/(NYmax-1)
-
-    ! Definizione di una griglia di punti regolare (1..NXmax, 1..NYmax) 
-    DO i=1, NXmax
-       X(i) = dx * (i-1)
-    ENDDO 
-
-    DO j=1, NYmax
-       Y(j) = dy * (j-1) 
-    ENDDO
-    ! ----------------------------------------------------------------    
-
-    open (22,file='GRID.dat') !scrittura dei punti della griglia su file 
-      WRITE(22,*)'VARIABLES = "X", "Y" ' 
-      WRITE (22,*)' ZONE I=' ,NXmax, ', J=', NYmax, ', F=POINT'
-      DO I=1, NXmax
-         WRITE (22,*) X(I)  
-      ENDDO
-      DO J=1, NYmax
-         WRITE (22,*) Y(J)  
-      ENDDO 
-    close(22)
-    
-  end subroutine init_grid
-
-
-  subroutine init_cells()
-
-    integer :: i, j, n
-
-    !calculation Xc,Yc (calcolo delle posizioni dei volumetti) ------------------
-    NXmaxC = NXmax + 1
-    NYmaxC = NYmax + 1
-    allocate(Xc(NXmaxC))
-    allocate(Yc(NYmaxC))
-
-    do i=2,NXmax
-        Xc(i)=( X(i-1) + X(i) ) * 0.5_dp
-    end do
-    
-    do j=2,NYmax
-        Yc(j)=(  Y(j-1) + Y(j) ) * 0.5_dp 
-    enddo
-   
-    Xc(1) = X(1)
-    Xc(NXmaxC) = X(NXmax)
-    
-    Yc(1) = Y(1)
-    Yc(NYmaxC) = Y(NYmax) 
-  
-  end subroutine init_cells
-
-  !****************************************************************************
-  ! co-located grid definition
-  ! + represent original grid X(i,j), Y(i,j)
-  ! o represent colocal grid Xc, Yc
-  !                                         
-  !  1  2     3                                NXmax+1 
-  !  o--o--+--o--+--o--+--o--+--o--+--o--+--o--o
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+==*=====*=====*==+-----+-----+
-  !  o  o  |  o  *  X  |  X  |  X  *  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+           flusso in presenza di un ostacolo
-  !  o  o  |  o  *  X  |  X  |  X  *  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  *  X  |  X  |  X  *  o  |  o  o
-  !  +-----+-----+==*=====*=====*==+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  +-----+-----+-----+-----+-----+-----+-----+
-  !  o  o  |  o  |  o  |  o  |  o  |  o  |  o  o
-  !  o--o--+--o--+--o--+--o--+--o--+--o--+--o--o
-  !  1     2     3     4                       NXmax (nodi)
-  !
-  !  0.0                                       1.0
-  !****************************************************************************
-  !****************************************************************************
   
   subroutine init_exact()
   

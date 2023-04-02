@@ -32,6 +32,12 @@ Program Main
   character(25)                         :: grid_data_path
   character(len=dp), dimension(0:4,0:1) :: grid_data  
 
+
+  !--------------------------------------------------------------------------
+  ! Reading input data from file
+  !--------------------------------------------------------------------------
+
+  !------------------
   ! Input data for NS
   
   input_data_path="input_files/input_data.dat"
@@ -48,7 +54,25 @@ Program Main
   
   mode = input_data(2,1)
   ch   = input_data(8,1)
-  
+
+  readstart = .false.
+
+  if (ch=='N') then
+    rhiechow = .false.
+  elseif (ch=='Y') then
+    rhiechow = .true.
+  end if
+
+  print*, filename
+  print*, 'Re=        ',Re
+  print*, 'alfa=      ',alfa
+  print*, 'beta=      ',beta
+  print*, 'omega=     ',omega
+  print*, 'Poiss_acc= ',Poiss_acc
+  print*, 'Poiss_iter=',Poiss_iter
+  print*, 'Rhie&Chow= ',ch
+
+  !----------------
   ! Grid parameters
   
   grid_data_path="input_files/grid_data.dat"
@@ -65,6 +89,7 @@ Program Main
   if (trim(arg)=='UPD')  mode = 'U'
   if (trim(arg)=='HLPA') mode = 'H'
 
+<<<<<<< HEAD
   readstart = .false.
 
 
@@ -82,6 +107,8 @@ Program Main
   print*, 'Poiss_acc= ',Poiss_acc 
   print*, 'Poiss_iter=',Poiss_iter 
   print*, 'Rhie&Chow= ',ch 
+=======
+>>>>>>> eb79a8d7e70d16265ea82c8286afe7c423ea778b
 
   print*, 'Init Grid'
   call Init_grid() 
