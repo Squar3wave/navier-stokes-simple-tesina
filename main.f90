@@ -22,7 +22,9 @@ Program Main
   use solvers 
   implicit none
   
-  integer                               :: Niter, Niter_last, Niter_print, j, i, k
+  integer                               :: Niter, &
+                                           Niter_last, Niter_print, &
+                                           i, j, k
   character(64)                         :: arg
   character(1)                          :: ch
   character(26)                         :: input_data_path
@@ -59,14 +61,14 @@ Program Main
   read(grid_data(3,1), '(i10.0)') X_length
   read(grid_data(4,1), '(i10.0)') Y_length
   
-  if (trim(arg)=='CDS') mode = 'C'
-  if (trim(arg)=='UPD') mode = 'U'
+  if (trim(arg)=='CDS')  mode = 'C'
+  if (trim(arg)=='UPD')  mode = 'U'
   if (trim(arg)=='HLPA') mode = 'H'
 
   readstart = .false.
 
 
-  if (ch=='N') then 
+  if     (ch=='N') then 
     rhiechow = .false.
   elseif (ch=='Y') then
     rhiechow = .true.

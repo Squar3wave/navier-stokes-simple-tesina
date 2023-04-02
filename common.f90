@@ -69,8 +69,8 @@
    real(dp), dimension(:,:,:), allocatable, public :: Sp
 
    ! exact solutions:
-   real :: x_exct(17), v_exct(17)
-   real :: y_exct(17), u_exct(17)
+   real :: x_exct(0:16), v_exct(0:16)
+   real :: y_exct(0:16), u_exct(0:16)
  
    logical, public :: readstart
    character(64), public :: filename
@@ -380,24 +380,71 @@
   !****************************************************************************
   
   subroutine init_exact()
-    x_exct(1)=-0.500000+0.5; v_exct(1)= -0.000882
-    x_exct(2)=-0.327052+0.5; v_exct(2)= -0.383699
-    x_exct(3)=-0.397406+0.5; v_exct(3)= -0.297251
-    x_exct(4)=-0.217948+0.5; v_exct(4)= -0.27788
-    x_exct(5)=-0.428914+0.5; v_exct(5)= -0.222276
-    x_exct(6)=-0.436290+0.5; v_exct(6)= -0.201989
-    x_exct(7)=-0.444335+0.5; v_exct(7)= -0.181701
-    x_exct(8)=-0.046595+0.5; v_exct(8)= -0.106804
-    x_exct(9)= 0.001598+0.5; v_exct(9)= -0.060949
-    x_exct(10)=0.118733+0.5; v_exct(10)= 0.057217
-    x_exct(11)=0.235193+0.5; v_exct(11)= 0.186849
-    x_exct(12)=0.352315+0.5; v_exct(12)= 0.333239
-    x_exct(13)=0.45404 +0.5; v_exct(13)= 0.466401
-    x_exct(14)=0.461386+0.5; v_exct(14)= 0.511382
-    x_exct(15)=0.469392+0.5; v_exct(15)= 0.574884
-    x_exct(16)=0.476719+0.5; v_exct(16)= 0.659554
-    x_exct(17)=0.5     +0.5; v_exct(17)= 0.999118
-
+  
+    integer                                :: i
+    character(23)                          :: xexact_data_path, vexact_data_path, &
+                                              yexact_data_path, uexact_data_path
+    character(len=dp), dimension(0:16,0:1) :: data
+    
+    xexact_data_path="input_files/x_exact.dat"
+    vexact_data_path="input_files/v_exact.dat"
+    yexact_data_path="input_files/y_exact.dat"
+    uexact_data_path="input_files/u_exact.dat"
+  
+    call file_reader(data, xexact_data_path, len(xexact_data_path))
+    
+    do i=0,16
+      read(data(i,1), '(f10.0)') x_exct(i)
+    end do
+    
+    x_exct = x_exct + 0.5_dp
+    
+    
+    call file_reader(data, vexact_data_path, len(vexact_data_path))
+    
+    do i=0,16
+      read(data(i,1), '(f10.0)') v_exct(i)
+    end do
+    
+    
+    
+    call file_reader(data, yexact_data_path, len(yexact_data_path))
+    
+    do i=0,16
+      read(data(i,1), '(f10.0)') y_exct(i)
+    end do
+    
+    y_exct = y_exct + 0.5_dp
+    
+    
+    call file_reader(data, uexact_data_path, len(uexact_data_path))
+    
+    do i=0,16
+      read(data(i,1), '(f10.0)') u_exct(i)
+    end do
+    
+    
+!     x_exct(1)=-0.500000+0.5; v_exct(1)= -0.000882
+!     x_exct(2)=-0.327052+0.5; v_exct(2)= -0.383699
+!     x_exct(3)=-0.397406+0.5; v_exct(3)= -0.297251
+!     x_exct(4)=-0.217948+0.5; v_exct(4)= -0.27788
+!     x_exct(5)=-0.428914+0.5; v_exct(5)= -0.222276
+!     x_exct(6)=-0.436290+0.5; v_exct(6)= -0.201989
+!     x_exct(7)=-0.444335+0.5; v_exct(7)= -0.181701
+!     x_exct(8)=-0.046595+0.5; v_exct(8)= -0.106804
+!     x_exct(9)= 0.001598+0.5; v_exct(9)= -0.060949
+!     x_exct(10)=0.118733+0.5; v_exct(10)= 0.057217
+!     x_exct(11)=0.235193+0.5; v_exct(11)= 0.186849
+!     x_exct(12)=0.352315+0.5; v_exct(12)= 0.333239
+!     x_exct(13)=0.45404 +0.5; v_exct(13)= 0.466401
+!     x_exct(14)=0.461386+0.5; v_exct(14)= 0.511382
+!     x_exct(15)=0.469392+0.5; v_exct(15)= 0.574884
+!     x_exct(16)=0.476719+0.5; v_exct(16)= 0.659554
+!     x_exct(17)=0.5     +0.5; v_exct(17)= 0.999118    
+    
+    
+    !----------------------------------------------
+    ! 2nd set? Ask professor
     !x_exct(1)=0.00282901; v_exct(1)=-0.07028612
     !x_exct(2)=6.42882E-2; v_exct(2)=2.71771E+0
     !x_exct(3)=7.35542E-2; v_exct(3)=2.86215E+0
@@ -415,23 +462,31 @@
     !x_exct(15)=9.61692E-1; v_exct(15)=-2.92069E+0
     !x_exct(16)=9.69195E-1; v_exct(16)=-2.25968E+0
     !x_exct(17)=1.00098E+0; v_exct(17)=-9.09091E-2
-    y_exct(1)=-0.500000 +0.5; u_exct(1)=0.00069404
-    y_exct(2)=-0.43768  +0.5; u_exct(2)=0.275621
-    y_exct(3)=-0.429602 +0.5; u_exct(3)=0.290847
-    y_exct(4)=-0.421523 +0.5; u_exct(4)=0.303994
-    y_exct(5)=-0.406521 +0.5; u_exct(5)=0.326826
-    y_exct(6)=-0.343624 +0.5; u_exct(6)=0.371038
-    y_exct(7)=-0.273803 +0.5; u_exct(7)=0.330015
-    y_exct(8)=-0.265724 +0.5; u_exct(8)=0.32307
-    y_exct(9)=-0.000289 +0.5; u_exct(9)=0.0252893
-    y_exct(10)= 0.304962+0.5; u_exct(10)=-0.318994
-    y_exct(11)= 0.359781+0.5; u_exct(11)=-0.427191
-    y_exct(12)= 0.406520+0.5; u_exct(12)=-0.515279
-    y_exct(13)= 0.445182+0.5; u_exct(13)=-0.392034
-    y_exct(14)= 0.453260+0.5; u_exct(14)=-0.336623
-    y_exct(15)= 0.461339+0.5; u_exct(15)=-0.277749
-    y_exct(16)= 0.46884 +0.5; u_exct(16)=-0.214023
-    y_exct(17)= 0.5     +0.5; u_exct(17)=-6.20706e-17
+    
+    
+    !---------------------------------------------
+    
+!     y_exct(1)=-0.500000 +0.5; u_exct(1)=0.00069404
+!     y_exct(2)=-0.43768  +0.5; u_exct(2)=0.275621
+!     y_exct(3)=-0.429602 +0.5; u_exct(3)=0.290847
+!     y_exct(4)=-0.421523 +0.5; u_exct(4)=0.303994
+!     y_exct(5)=-0.406521 +0.5; u_exct(5)=0.326826
+!     y_exct(6)=-0.343624 +0.5; u_exct(6)=0.371038
+!     y_exct(7)=-0.273803 +0.5; u_exct(7)=0.330015
+!     y_exct(8)=-0.265724 +0.5; u_exct(8)=0.32307
+!     y_exct(9)=-0.000289 +0.5; u_exct(9)=0.0252893
+!     y_exct(10)= 0.304962+0.5; u_exct(10)=-0.318994
+!     y_exct(11)= 0.359781+0.5; u_exct(11)=-0.427191
+!     y_exct(12)= 0.406520+0.5; u_exct(12)=-0.515279
+!     y_exct(13)= 0.445182+0.5; u_exct(13)=-0.392034
+!     y_exct(14)= 0.453260+0.5; u_exct(14)=-0.336623
+!     y_exct(15)= 0.461339+0.5; u_exct(15)=-0.277749
+!     y_exct(16)= 0.46884 +0.5; u_exct(16)=-0.214023
+!     y_exct(17)= 0.5     +0.5; u_exct(17)=-6.20706e-17
+
+
+    !----------------------------------------------
+    ! 2nd set? Ask professor
 
     !y_exct(1)=-1.85185E-3; u_exct(1)=0.00000E+0
     !y_exct(2)=5.00000E-2; u_exct(2)=-1.84615E+0
@@ -462,7 +517,7 @@
     !WRITE (23,*)' ZONE F=POINT, I=', 17
 
      	
-    DO i=1,17     
+    DO i=0,10     
       WRITE (23,*) x_exct(i), v_exct(i)
     ENDDO   
     close(23)
@@ -470,7 +525,7 @@
     ! ------------------------------------------- 
     open (23,file='Exact_U.dat') 
     !WRITE (23,*)' ZONE F=POINT, I=', 17
-     DO j=1,17       
+     DO j=0,16       
        WRITE (23,*) y_exct(j), u_exct(j)
     ENDDO
     close(23)
