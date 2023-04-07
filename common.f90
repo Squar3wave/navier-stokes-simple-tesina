@@ -61,7 +61,7 @@
 
    ! common /geomt/
    real(dp), dimension(:,:), allocatable, public :: DPx_c ,  DPy_c
-             
+
    ! common /koeff/
    real(dp), dimension(:,:), allocatable, public :: Con_e, Con_n
    real(dp), dimension(:,:), allocatable, public :: Ap, Ae, As,  An, Aw
@@ -139,8 +139,8 @@
 
     rewind(49)
 
-!    print *, 'Number of rows:   ', rows
-!    print *, 'Number of columns:', cols
+    !print *, 'Number of rows:   ', rows
+    !print *, 'Number of columns:', cols
 
     allocate(x(0:(rows-1),0:(cols-1)))
 
