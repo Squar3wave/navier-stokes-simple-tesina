@@ -89,7 +89,6 @@ Program Main
   if (trim(arg)=='UPD')  mode = 'U'
   if (trim(arg)=='HLPA') mode = 'H'
 
-<<<<<<< HEAD
   readstart = .false.
 
 
@@ -107,8 +106,6 @@ Program Main
   print*, 'Poiss_acc= ',Poiss_acc 
   print*, 'Poiss_iter=',Poiss_iter 
   print*, 'Rhie&Chow= ',ch 
-=======
->>>>>>> eb79a8d7e70d16265ea82c8286afe7c423ea778b
 
   print*, 'Init Grid'
   call Init_grid() 
