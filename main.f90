@@ -63,20 +63,11 @@ Program Main
     rhiechow = .true.
   end if
 
-  print*, filename
-  print*, 'Re=        ',Re
-  print*, 'alfa=      ',alfa
-  print*, 'beta=      ',beta
-  print*, 'omega=     ',omega
-  print*, 'Poiss_acc= ',Poiss_acc
-  print*, 'Poiss_iter=',Poiss_iter
-  print*, 'Rhie&Chow= ',ch
-
   !----------------
   ! Grid parameters
   
   grid_data_path="input_files/grid_data.dat"
-   
+  
   call file_reader(grid_data, grid_data_path, len(grid_data_path))
 
   read(grid_data(0,1), '(i10.0)') NXmax
