@@ -7,10 +7,12 @@ FLAGS = -O3 -Wall -fcheck=all
 TARGET1 = ns
 
 SOURCES1 = common.f90 \
+	   gmres.f90\
 	   solvers.f90 \
 	   main.f90
 
 OBJS1 = $(SOURCES1:.f90=.o)
+LIBS = -llapack
 
 %.o: %.f90 
 	$(FC) $(FLAGS) -c  $<
@@ -29,4 +31,5 @@ cleandat:
 	rm *.dat *.txt *.raw 
 
 solvers.o : common.o
-main.o : common.o solvers.o
+gmres.o : common.o
+main.o : common.o solvers.o gmres.o
