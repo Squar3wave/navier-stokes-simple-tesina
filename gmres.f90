@@ -24,13 +24,13 @@ module gmres_solver
     ! Krylov vector
     q = matmul(A_in, Q_in(:,k_in))
     
-    ! Modified Gram-Schmidt
+    ! Modified Gram-Schmidt, keeping the Hessenberg matrix
     do i = 0, k_in-1
       
-      h(i) = matmul(q,Q_in(:,i))
-      q    = q - matmul(h(i),Q_in(:,i))
-      
-    end do
+      h(i) = dot_product(q,Q_in(:,i))
+      q    = q - h(i)*Q_in(:,i)
+      !q    = q - matmul(h(i),Q_in(:,i))
+      end do
     
     h(k_in) = norm2(q)
     q = q/norm2(q)
@@ -92,7 +92,7 @@ module gmres_solver
     integer, intent(in)                   :: Iter_in
     real(dp), intent(in)                  :: threshold_in
     real(dp), dimension(:), allocatable   :: r, cs, sn, e1, beta, error, y
-    integer                               :: n, i, j, k
+    integer                               :: n, k
     integer, dimension(0:1)               :: in_shape
     real(dp)                              :: b_norm, r_norm
     real(dp), dimension(:,:), allocatable :: Q, H, temp_var
@@ -142,7 +142,9 @@ module gmres_solver
       beta(k)   =  cs(k)*beta(k)
       error(k)  = abs(beta(k+1))/b_norm
       
-      if (error <= threshold_in) exit
+      if (error(k) <= threshold_in) then
+        exit
+      end if
       
     end do
     
@@ -153,7 +155,12 @@ module gmres_solver
     deallocate(r)
     deallocate(cs)
     deallocate(sn)
+    deallocate(error)
+    deallocate(e1)
+    deallocate(beta)
+    deallocate(temp_var)
     deallocate(Q)
+    deallocate(H)
     
     end subroutine
     

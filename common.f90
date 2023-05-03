@@ -199,7 +199,7 @@
 
   subroutine init_cells()
 
-    integer :: i, j, n
+    integer :: i, j
 
     !calculation Xc,Yc (calcolo delle posizioni dei volumetti) ------------------
     NXmaxC = NXmax + 1
