@@ -159,8 +159,7 @@ contains
     real(dp) :: Res_sum_before, Res_sum_after
     real(dp) :: Pe, Pn, Pw, Ps
     real(dp) :: Vol, Dx, Dy, Urf, Delta_f
-
-
+    
     !  calculation of fluxes
     !        N 
     !  j  +-----+----+
@@ -297,38 +296,62 @@ contains
 
     Sp(:,:,1) = Sp(:,:,1) + (1.0_dp - Alfa )* Ap(:,:)*F(:,:,1) 
     Sp(:,:,2) = Sp(:,:,2) + (1.0_dp - Alfa )* Ap(:,:)*F(:,:,2) 
+    
     !---------------------------------------------------------------------------
     write(*,*)'solve U'
     call apply_constrain(1)
-
-    niter = 0
-    call Convergence_Criteria(1,Res_sum_After)
-       
-    do while ( abs(Res_sum_After) > 1.d-12 .and. niter < 50)
-       call TDMA(1)
-       call apply_constrain(1)
-       call Convergence_Criteria(1,Res_sum_After)
-       niter= niter + 1
-    enddo
-
+    
+    ! definire solv_choice
+    if(solv_choice="gmres") then
+      ! Nx*Ny*5 elementi non nulli
+      ! still not working
+      
+      ! subroutine per compattare le a in A_csr
+      call convert2csr(Ap,Ae,An,As,Aw, A_csr)
+      
+      ! reshape
+      x(:) = reshape(F(:,:,1))
+      b(:) = reshape(Sp(:,:,1))
+      
+      call gmres(A_csr, b, x, error, max_iterations, tolerance)
+      
+      
+      ! end not working
+    
+    else
+        
+      niter = 0
+      call Convergence_Criteria(1,Res_sum_After)
+        
+      do while ( abs(Res_sum_After) > 1.d-12 .and. niter < 50)
+      
+      
+        call TDMA(1)
+        call apply_constrain(1)
+        call Convergence_Criteria(1,Res_sum_After)
+        niter= niter + 1
+      enddo
+      
+    end if
+    
     write(*,*) '|err|=',abs(Res_sum_After),niter
-
-
+    
+    
     write(*,*) 'solve V'
     call apply_constrain(2)
-
+    
     niter = 0
     call Convergence_Criteria(2,Res_sum_After)
-
+    
     do while ( abs(Res_sum_After) > 1.d-12 .and. niter < 50)
        call TDMA(2)
        call apply_constrain(2)
        call Convergence_Criteria(2,Res_sum_After)
        niter= niter + 1
     end do
-
+    
     write(*,*) '|err|=',abs(Res_sum_After),niter
-  
+    
   end subroutine solve_UV
 
 

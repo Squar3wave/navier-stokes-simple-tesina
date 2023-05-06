@@ -1,6 +1,7 @@
 module gmres_solver
 
   use common
+  use sparsealg
   implicit none
   
   public :: arnoldi, apply_givens_rotation, gmres
@@ -22,7 +23,9 @@ module gmres_solver
     allocate(h(0:Qsize(0)-1))
     
     ! Krylov vector
-    q = matmul(A_in, Q_in(:,k_in))
+    !q = matmul(A_in, Q_in(:,k_in))
+    
+    call matvec(A_in, Q_in(:,k_in), q)
     
     ! Modified Gram-Schmidt, keeping the Hessenberg matrix
     do i = 0, k_in-1
@@ -84,23 +87,24 @@ module gmres_solver
     
   end subroutine
   
-  subroutine gmres(A_in, b_in, x_in, Iter_in, threshold_in, out, e)
+  subroutine gmres(A_in, b_in, x_out, e, Iter_in, threshold_in)
     
-    real(dp), dimension(:), intent(out)   :: out, e
-    real(dp), dimension(:), intent(in)    :: b_in,x_in
+    real(dp), dimension(:), intent(out)   :: x_out, e
+    real(dp), dimension(:), intent(in)    :: b_in
     real(dp), dimension(:,:), intent(in)  :: A_in
     integer, intent(in)                   :: Iter_in
     real(dp), intent(in)                  :: threshold_in
-    real(dp), dimension(:), allocatable   :: r, cs, sn, e1, beta, error, y
-    integer                               :: n, k
+    real(dp), dimension(:), allocatable   :: r, cs, sn, e1, beta, error, y, tmp_v
+    integer                               :: n, k, i, IPIV, LDB, INFO
     integer, dimension(0:1)               :: in_shape
     real(dp)                              :: b_norm, r_norm
-    real(dp), dimension(:,:), allocatable :: Q, H, temp_var
+    real(dp), dimension(:,:), allocatable :: Q, H, temp_var, tmp_m
     
     in_shape = shape(A_in)
     n = max(in_shape(0), in_shape(1))
     
     allocate(r(0:size(x_in)-1))
+    allocate(tmp_v(0:size(x_in)-1))
     allocate(cs(0:Iter_in-1))
     allocate(sn(0:Iter_in-1))
     allocate(error(0:Iter_in-1))
@@ -109,13 +113,17 @@ module gmres_solver
     allocate(temp_var(0:Iter_in,0:1))
     allocate(Q(0:size(x_in)-1,0:Iter_in-1))
     allocate(H(0:size(x_in)-1,0:Iter_in-1))
+    allocate(tmp_m(0:Iter_in-1,0:Iter_in-1))
+    allocate(y(0:Iter_in-1))
     
     cs = 0.0_dp
     e1 = 0.0_dp
     
     e1(0) = 1.0_dp
     
-    r = b_in - matmul(A_in,x_in)
+    call matvec(A_in,x_out,tmp_v)
+    
+    r = b_in - tmp_v
     
     b_norm = norm2(b_in)
     
@@ -150,8 +158,34 @@ module gmres_solver
     
     e = error
     
-    out = out + matmul(Q(:,0:Iter_in-1), matmul(inv(H(0:Iter_in-1,0:Iter_in-1)),beta(0:Iter_in-1)))
+    tmp_m = H(0:Iter_in-1,0:Iter_in-1)
     
+    call dgbvs(size(tmp_m,1), &   ! N: The number of linear equations
+               size(tmp_m,1)-1, & ! KL: The number of subdiagonals
+               size(tmp_m,1)-1, & ! KU: The number of superdiagonals
+               1, &               ! NRHS: The number of column for B
+               tmp_m, &           ! AB: The matrix A in band storage
+               size(tmp_m,1), &   ! LDAB: The leading dimension of AB, or the number of rows 
+               IPIV, &            ! IPIV: The pivot indices that define the permutation matrix P
+               y, &               ! B: out vecotr
+               size(y), &         ! LDB: The leading dimension of the array B
+               INFO)              ! INFO: if 0 all good, if <0 failde, if > 0 no solution 
+    
+    !$OMP PARALLEL, public(Q,y,x)
+    !$OMP DO
+    
+    do i=0,size(out)-1
+      
+      x_out(i)= x_out(i) + dot_product(Q(i,0:Iter_in-1),y)
+      
+    end do
+    
+    !$OMP END DO
+    !$OMP END PARALLEL
+    
+    !out = out + matmul(Q(:,0:Iter_in-1), matmul(inv(H(0:Iter_in-1,0:Iter_in-1)),beta(0:Iter_in-1)))
+    
+    deallocate(y)
     deallocate(r)
     deallocate(cs)
     deallocate(sn)
@@ -161,6 +195,8 @@ module gmres_solver
     deallocate(temp_var)
     deallocate(Q)
     deallocate(H)
+    deallocate(tmp_m)
+    deallocate(tmp_v)
     
     end subroutine
     
@@ -169,12 +205,12 @@ module gmres_solver
 ! decomposition.  Depends on LAPACK.
 ! found on https://fortranwiki.org/fortran/show/Matrix+inversion
 function inv(A) result(Ainv)
-  real(dp), dimension(:,:), intent(in) :: A
+  real(dp), dimension(:,:), intent(in)     :: A
   real(dp), dimension(size(A,1),size(A,2)) :: Ainv
 
-  real(dp), dimension(size(A,1)) :: work  ! work array for LAPACK
-  integer, dimension(size(A,1)) :: ipiv   ! pivot indices
-  integer :: n, info
+  real(dp), dimension(size(A,1))           :: work  ! work array for LAPACK
+  integer, dimension(size(A,1))            :: ipiv   ! pivot indices
+  integer                                  :: n, info
 
   ! External procedures defined in LAPACK
   external DGETRF

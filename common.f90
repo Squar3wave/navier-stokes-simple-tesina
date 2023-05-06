@@ -16,6 +16,9 @@
 !Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 !*********************************************************************
  module common
+ 
+   use matdef
+ 
    implicit none
    private
     
@@ -25,7 +28,7 @@
    public :: out_array, out_paraview_vtk
    public :: file_reader
    
-   integer,  parameter, public :: dp = selected_real_kind(14,100) 
+   !integer,  parameter, public :: dp = selected_real_kind(14,100) 
    real(dp), parameter    :: Pi =  3.14159265358979323844_dp
    integer, parameter, public :: Nvars = 4
    ! Reynolds number
@@ -156,6 +159,42 @@
     
   end subroutine
 
+  subroutine convert2csr(Ap_in,Ae_in,An_in,As_in,Aw_in, A_csr_out)
+
+  real(dp), dimension(:,:), intent(in)  :: Ap_in,Ae_in,An_in,As_in,Aw_in
+  real(dp), dimension(:), intent(out)   :: A_csr_out
+  integer                               :: i,j, N, M 
+  
+  N=size(Ap_in,1)
+  
+  do i = 0, N-1
+    do j = 0, N-1
+      A_csr_out%nzval(coo2node_2d(i,j)) = Ap_in(i,j)
+    end do  
+  end do
+  
+  contains
+    
+    function coo2node_2d(i,j) result(node)
+      integer, intent(in) :: i,j
+      integer :: node
+     
+      node = (j-1)*N + i
+      
+    end function coo2node_2d
+    
+    function node2coo(node) result(ind)
+      
+      integer, intent(in) :: node
+      integer, dimension(0:1) :: ind
+      
+      ind(0) = mod(node,N)
+      ind(1) = node/N + 1
+      
+    end function
+   
+  end subroutine
+  
   !---------------------------------------------------------------------------
   !---------------------------------------------------------------------------
 

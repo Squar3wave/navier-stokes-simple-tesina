@@ -7,3 +7,4 @@ omega------ 1.00
 Poiss_acc-- 1e-7
 Poiss_iter- 500
 Rie-Chow--- y
+Solver----- gmres

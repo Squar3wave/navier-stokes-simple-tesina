@@ -28,10 +28,10 @@ Program Main
   character(64)                         :: arg
   character(1)                          :: ch
   character(26)                         :: input_data_path
-  character(len=dp), dimension(0:8,0:1) :: input_data
+  character(len=dp), dimension(0:9,0:1) :: input_data
   character(25)                         :: grid_data_path
   character(len=dp), dimension(0:4,0:1) :: grid_data  
-
+  character(5)                          :: solv_choice
 
   !--------------------------------------------------------------------------
   ! Reading input data from file
@@ -52,9 +52,10 @@ Program Main
   read(input_data(6,1), '(f10.0)') Poiss_acc
   read(input_data(7,1), '(i10.0)') Poiss_iter
   
-  mode = input_data(2,1)
-  ch   = input_data(8,1)
-
+  mode        = input_data(2,1)
+  ch          = input_data(8,1)
+  solv_choice = input_data(9,1)
+  
   readstart = .false.
 
   if (ch=='N') then
@@ -97,6 +98,7 @@ Program Main
   print*, 'Poiss_acc= ',Poiss_acc 
   print*, 'Poiss_iter=',Poiss_iter 
   print*, 'Rhie&Chow= ',ch 
+  print*, 'Solver=    ',solv_choice 
 
   print*, 'Init Grid'
   call Init_grid() 
