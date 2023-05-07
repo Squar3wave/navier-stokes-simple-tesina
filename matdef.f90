@@ -1,5 +1,5 @@
 module matdef
-!  use precision
+
   implicit none
   
   integer,  parameter, public :: dp = selected_real_kind(14,100) 

@@ -66,10 +66,11 @@
    real(dp), dimension(:,:), allocatable, public :: DPx_c ,  DPy_c
 
    ! common /koeff/
-   real(dp), dimension(:,:), allocatable, public :: Con_e, Con_n
-   real(dp), dimension(:,:), allocatable, public :: Ap, Ae, As,  An, Aw
-   real(dp), dimension(:,:), allocatable, public :: invAp
+   real(dp), dimension(:,:), allocatable, public   :: Con_e, Con_n
+   real(dp), dimension(:,:), allocatable, public   :: Ap, Ae, As,  An, Aw
+   real(dp), dimension(:,:), allocatable, public   :: invAp
    real(dp), dimension(:,:,:), allocatable, public :: Sp
+   type(rCSR), public                              :: A_csr
 
    ! exact solutions:
    real :: x_exct(0:16), v_exct(0:16)
@@ -162,7 +163,7 @@
   subroutine convert2csr(Ap_in,Ae_in,An_in,As_in,Aw_in, A_csr_out)
 
   real(dp), dimension(:,:), intent(in)  :: Ap_in,Ae_in,An_in,As_in,Aw_in
-  real(dp), dimension(:), intent(out)   :: A_csr_out
+  type(rCSR), intent(out)               :: A_csr_out
   integer                               :: i,j, N, M 
   
   N=size(Ap_in,1)

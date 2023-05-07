@@ -1,5 +1,6 @@
 module gmres_solver
 
+  use matdef
   use common
   use sparsealg
   implicit none
@@ -10,12 +11,14 @@ module gmres_solver
   
   subroutine arnoldi(A_in,Q_in,k_in, OUT)
     
-    real(dp), dimension(:,:), intent(out) :: OUT(0:,0:)
-    real(dp), dimension(:,:), intent(in)  :: A_in, Q_in
-    integer, intent(in)                   :: k_in
-    real(dp), dimension(:), allocatable   :: q, h
-    integer                               :: i
-    integer, dimension(0:1)               :: Qsize
+    real(dp), dimension(:,:), intent(out)  :: OUT(0:,0:)
+    !real(dp), dimension(:,:), intent(in)  :: A_in, Q_in
+    real(dp), dimension(:,:), intent(in)   :: Q_in
+    type(rCSR), intent(in)                 :: A_in
+    integer, intent(in)                    :: k_in
+    real(dp), dimension(:), allocatable    :: q, h
+    integer                                :: i
+    integer, dimension(0:1)                :: Qsize
     
     Qsize = shape(Q_in)
     
@@ -89,30 +92,26 @@ module gmres_solver
   
   subroutine gmres(A_in, b_in, x_out, e, Iter_in, threshold_in)
     
-    real(dp), dimension(:), intent(out)   :: x_out, e
-    real(dp), dimension(:), intent(in)    :: b_in
-    real(dp), dimension(:,:), intent(in)  :: A_in
-    integer, intent(in)                   :: Iter_in
-    real(dp), intent(in)                  :: threshold_in
-    real(dp), dimension(:), allocatable   :: r, cs, sn, e1, beta, error, y, tmp_v
-    integer                               :: n, k, i, IPIV, LDB, INFO
-    integer, dimension(0:1)               :: in_shape
-    real(dp)                              :: b_norm, r_norm
-    real(dp), dimension(:,:), allocatable :: Q, H, temp_var, tmp_m
+    real(dp), dimension(:), intent(out)    :: x_out(0:), e
+    real(dp), dimension(:), intent(in)     :: b_in
+    type(rCSR), intent(in)                 :: A_in
+    integer, intent(in)                    :: Iter_in
+    real(dp), intent(in)                   :: threshold_in
+    real(dp), dimension(:), allocatable    :: r, cs, sn, e1, beta, error, y, tmp_v
+    integer                                :: n, k, i, IPIV, LDB, INFO
+    real(dp)                               :: b_norm, r_norm
+    real(dp), dimension(:,:), allocatable  :: Q, H, temp_var, tmp_m
     
-    in_shape = shape(A_in)
-    n = max(in_shape(0), in_shape(1))
-    
-    allocate(r(0:size(x_in)-1))
-    allocate(tmp_v(0:size(x_in)-1))
+    allocate(r(0:size(x_out)-1))
+    allocate(tmp_v(0:size(x_out)-1))
     allocate(cs(0:Iter_in-1))
     allocate(sn(0:Iter_in-1))
     allocate(error(0:Iter_in-1))
     allocate(e1(0:Iter_in))
     allocate(beta(0:Iter_in))
     allocate(temp_var(0:Iter_in,0:1))
-    allocate(Q(0:size(x_in)-1,0:Iter_in-1))
-    allocate(H(0:size(x_in)-1,0:Iter_in-1))
+    allocate(Q(0:size(x_out)-1,0:Iter_in-1))
+    allocate(H(0:size(x_out)-1,0:Iter_in-1))
     allocate(tmp_m(0:Iter_in-1,0:Iter_in-1))
     allocate(y(0:Iter_in-1))
     
@@ -167,14 +166,14 @@ module gmres_solver
                tmp_m, &           ! AB: The matrix A in band storage
                size(tmp_m,1), &   ! LDAB: The leading dimension of AB, or the number of rows 
                IPIV, &            ! IPIV: The pivot indices that define the permutation matrix P
-               y, &               ! B: out vecotr
+               y, &               ! B: out vector
                size(y), &         ! LDB: The leading dimension of the array B
-               INFO)              ! INFO: if 0 all good, if <0 failde, if > 0 no solution 
+               INFO)              ! INFO: if 0 all good, if <0 failed, if > 0 no solution
     
     !$OMP PARALLEL, public(Q,y,x)
     !$OMP DO
     
-    do i=0,size(out)-1
+    do i=0,size(x_out)-1
       
       x_out(i)= x_out(i) + dot_product(Q(i,0:Iter_in-1),y)
       

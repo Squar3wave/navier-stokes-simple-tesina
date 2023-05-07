@@ -1,7 +1,7 @@
 
 FC = gfortran  
-#FLAGS = -O3
-FLAGS = -O3 -Wall -fcheck=all
+FLAGS = -O3
+#FLAGS = -O3 -Wall -fcheck=all
 #FLAGS = -g -CB -check all 
 #FLAGS = -g -Warray-bounds -fbounds-check
  

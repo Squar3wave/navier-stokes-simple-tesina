@@ -17,6 +17,10 @@
 
 !**********************************************************************
 module solvers
+
+  use matdef
+  !use gmres
+  use sparsealg
   use common
   implicit none
   private
@@ -302,7 +306,7 @@ contains
     call apply_constrain(1)
     
     ! definire solv_choice
-    if(solv_choice="gmres") then
+    if(solv_choice=="gmres") then
       ! Nx*Ny*5 elementi non nulli
       ! still not working
       
@@ -331,27 +335,29 @@ contains
         call Convergence_Criteria(1,Res_sum_After)
         niter= niter + 1
       enddo
-      
+
+
+      write(*,*) '|err|=',abs(Res_sum_After),niter
+
+
+      write(*,*) 'solve V'
+      call apply_constrain(2)
+
+      niter = 0
+      call Convergence_Criteria(2,Res_sum_After)
+
+      do while ( abs(Res_sum_After) > 1.d-12 .and. niter < 50)
+        call TDMA(2)
+        call apply_constrain(2)
+        call Convergence_Criteria(2,Res_sum_After)
+        niter= niter + 1
+      end do
+
+      write(*,*) '|err|=',abs(Res_sum_After),niter
+
     end if
-    
-    write(*,*) '|err|=',abs(Res_sum_After),niter
-    
-    
-    write(*,*) 'solve V'
-    call apply_constrain(2)
-    
-    niter = 0
-    call Convergence_Criteria(2,Res_sum_After)
-    
-    do while ( abs(Res_sum_After) > 1.d-12 .and. niter < 50)
-       call TDMA(2)
-       call apply_constrain(2)
-       call Convergence_Criteria(2,Res_sum_After)
-       niter= niter + 1
-    end do
-    
-    write(*,*) '|err|=',abs(Res_sum_After),niter
-    
+
+
   end subroutine solve_UV
 
 
