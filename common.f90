@@ -71,7 +71,9 @@
    real(dp), dimension(:,:), allocatable, public   :: invAp
    real(dp), dimension(:,:,:), allocatable, public :: Sp
    type(rCSR), public                              :: A_csr
-
+   real(dp), dimension(:), allocatable, public     :: x_csr, b_csr, error 
+   
+   
    ! exact solutions:
    real :: x_exct(0:16), v_exct(0:16)
    real :: y_exct(0:16), u_exct(0:16)

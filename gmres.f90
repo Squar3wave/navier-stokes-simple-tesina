@@ -132,6 +132,9 @@ module gmres_solver
     Q(:,0) = r/r_norm
     beta   = r_norm * e1
     
+    H = 0.0_dp
+    Q = 0.0_dp
+    
     do k = 0, Iter_in-1
       
       call arnoldi(A_in, Q, k, temp_var)
@@ -155,11 +158,13 @@ module gmres_solver
       
     end do
     
+    
+    
     e = error
     
     tmp_m = H(0:Iter_in-1,0:Iter_in-1)
     
-    call dgbvs(size(tmp_m,1), &   ! N: The number of linear equations
+    call dgbsv(size(tmp_m,1), &   ! N: The number of linear equations
                size(tmp_m,1)-1, & ! KL: The number of subdiagonals
                size(tmp_m,1)-1, & ! KU: The number of superdiagonals
                1, &               ! NRHS: The number of column for B

@@ -18,6 +18,7 @@
 
 !-----------------------------------------------------------------------
 Program Main
+  use matdef
   use common
   use solvers 
   implicit none
@@ -31,7 +32,7 @@ Program Main
   character(len=dp), dimension(0:9,0:1) :: input_data
   character(25)                         :: grid_data_path
   character(len=dp), dimension(0:4,0:1) :: grid_data  
-  character(5), public                  :: solv_choice
+  character(5)                          :: solv_choice
 
   !--------------------------------------------------------------------------
   ! Reading input data from file

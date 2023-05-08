@@ -127,7 +127,7 @@ module adj_map
      
       node = (j-1)*N + i
       
-    end function coo2node
+    end function coo2node_2d
 
     
   end subroutine create_3D

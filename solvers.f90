@@ -19,7 +19,7 @@
 module solvers
 
   use matdef
-  !use gmres
+  use gmres_solver
   use sparsealg
   use common
   implicit none
@@ -29,6 +29,8 @@ module solvers
   public :: convergence_criteria
   public :: solve_pressure_correction   !correzioni sul campo di pressione
   public :: solve_uv   !calcolo delle componenti del campo di velocità
+  
+  character(5) :: choice
 
 
 contains
@@ -305,8 +307,11 @@ contains
     write(*,*)'solve U'
     call apply_constrain(1)
     
+    !choice = solv_choice
+    choice = "gmres"
+    
     ! definire solv_choice
-    if(solv_choice=="gmres") then
+    if(choice=="gmres") then
       ! Nx*Ny*5 elementi non nulli
       ! still not working
       
@@ -314,15 +319,20 @@ contains
       call convert2csr(Ap,Ae,An,As,Aw, A_csr)
       
       ! reshape
-      x(:) = reshape(F(:,:,1))
-      b(:) = reshape(Sp(:,:,1))
+      x_csr(:) = reshape(F(:,:,1), shape=[1])
+      b_csr(:) = reshape(Sp(:,:,1), shape=[1])
       
-      call gmres(A_csr, b, x, error, max_iterations, tolerance)
+      allocate(error(0:size(x_csr)-1))
       
+      error= 0.0_dp
       
-      ! end not working
-    
-    else
+      call gmres(A_csr, b_csr, x_csr, error, Niter, 10.0_dp)
+      
+      do i=0, size(x_csr)-1
+        print *, x_csr(i), error(i)
+      end do
+      
+   else
         
       niter = 0
       call Convergence_Criteria(1,Res_sum_After)
