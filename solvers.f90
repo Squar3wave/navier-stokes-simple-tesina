@@ -31,6 +31,7 @@ module solvers
   public :: solve_uv   !calcolo delle componenti del campo di velocità
   
   character(5) :: choice
+  integer      :: Nrow
 
 
 contains
@@ -149,6 +150,38 @@ contains
 
   end subroutine convergence_criteria
 
+  subroutine apply_constraint_gmres(nf)
+    
+    integer :: i, j
+    integer, intent(in) :: nf 
+    
+    Sp(1:NXmax+1,:,nf)       = F(1:NXmax+1,:,nf)
+    Sp(1:NXmax+1,NYmax+1,nf) = F(1:NXmax+1,NYmax+1,nf)
+    Sp(:,NYmax+1,nf)         = F(:,NYmax+1,nf)
+    Sp(NXmax+1,1:NYmax+1,nf) = F(NXmax+1,1:NYmax+1,nf)
+    
+!     j=2
+!     
+!     do i= 2,Nxmax
+!      Sp(i,j,1) = Sp(i,j,1) - As(i,j)*F(i,j-1,nf)
+!     end do
+!        
+!     i=2
+!     do j= 2,Nymax
+!       Sp(i,j,1) = Sp(i,j,1) - Aw(i,j)*F(i-1,j,nf)
+!     end do
+!        
+!     j=Nymax
+!     do i= 2,Nxmax
+!      Sp(i,j,1) = Sp(i,j,1) - An(i,j)*F(i,j-1,nf)
+!     end do
+!        
+!     i=Nxmax
+!     do j= 2,Nymax
+!      Sp(i,j,1) = Sp(i,j,1) - Ae(i,j)*F(i-1,j,nf)
+!     end do
+    
+  end subroutine
 
 
   !************************************************************************
@@ -304,36 +337,81 @@ contains
     Sp(:,:,2) = Sp(:,:,2) + (1.0_dp - Alfa )* Ap(:,:)*F(:,:,2) 
     
     !---------------------------------------------------------------------------
-    write(*,*)'solve U'
-    call apply_constrain(1)
     
     !choice = solv_choice
     choice = "gmres"
     
     ! definire solv_choice
     if(choice=="gmres") then
+      
       ! Nx*Ny*5 elementi non nulli
       ! still not working
       
       ! subroutine per compattare le a in A_csr
+      
+      
+      ! rimuovo i bordi della matrice
+      ! magari mettere sta roba in una subroutine apply_costraint_gmres
+      ! occhio al terzo indice
+      
+      ! fine subroutine da creare
+      
+      Nrow=size(F(:,:,1))
+      
+      print *, "======================="
+      print *, "preliminary procedures"
+      print *, "======================="
+      print *,""
+      
+      print *, "create CSR"
+      call create(A_csr, Nrow, 5*Nrow)
+      print *, "done"
+      print *,""
+
+      print *, "apply costraints"
+      call apply_constraint_gmres(1)
+      print *, "done"
+      print *,""
+      
+      print *, "convert matrix to CRS"
       call convert2csr(Ap,Ae,An,As,Aw, A_csr)
+      print *, "done"
+      print *,""
       
-      ! reshape
-      x_csr(:) = reshape(F(:,:,1), shape=[1])
-      b_csr(:) = reshape(Sp(:,:,1), shape=[1])
+      print *, "allocate arrays"
+      allocate(x_gmres(Nrow))
+      allocate(b_gmres(Nrow))      
+      allocate(error(0:size(x_gmres)-1))
+      print *, "done"
+      print *,""
       
-      allocate(error(0:size(x_csr)-1))
+      print *, "reshape arrays"
+      x_gmres(:) = reshape( F(:,:,1), shape=[size( F(:,:,1))])
+      b_gmres(:) = reshape(Sp(:,:,1), shape=[size(Sp(:,:,1))])
+      print *, "done"
+      print *,""
       
       error= 0.0_dp
       
-      call gmres(A_csr, b_csr, x_csr, error, Niter, 10.0_dp)
+      print *, "======================="
+      print *, "starting solver"
+      print *, "======================="
+      print *,""
+
+      call gmres(A_csr, b_gmres, x_gmres, error, 100, 10.0_dp)
       
-      do i=0, size(x_csr)-1
-        print *, x_csr(i), error(i)
+      print *, "printing results"
+      
+      do i=1, size(x_gmres)
+        print *, x_gmres(i), error(i)
       end do
       
    else
-        
+      
+      write(*,*)'solve U'
+      call apply_constrain(1)
+      
+      
       niter = 0
       call Convergence_Criteria(1,Res_sum_After)
         

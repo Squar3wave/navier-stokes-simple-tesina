@@ -26,7 +26,7 @@
    public :: init_grid, init_cells
    public :: init_exact, write_exact
    public :: out_array, out_paraview_vtk
-   public :: file_reader
+   public :: file_reader, convert2csr
    
    !integer,  parameter, public :: dp = selected_real_kind(14,100) 
    real(dp), parameter    :: Pi =  3.14159265358979323844_dp
@@ -71,7 +71,7 @@
    real(dp), dimension(:,:), allocatable, public   :: invAp
    real(dp), dimension(:,:,:), allocatable, public :: Sp
    type(rCSR), public                              :: A_csr
-   real(dp), dimension(:), allocatable, public     :: x_csr, b_csr, error 
+   real(dp), dimension(:), allocatable, public     :: x_gmres, b_gmres, error 
    
    
    ! exact solutions:
@@ -164,16 +164,68 @@
 
   subroutine convert2csr(Ap_in,Ae_in,An_in,As_in,Aw_in, A_csr_out)
 
-  real(dp), dimension(:,:), intent(in)  :: Ap_in,Ae_in,An_in,As_in,Aw_in
-  type(rCSR), intent(out)               :: A_csr_out
-  integer                               :: i,j, N, M 
+  real(dp), dimension(:,:), intent(in)    :: Ap_in,Ae_in,An_in,As_in,Aw_in
+  type(rCSR), intent(inout)               :: A_csr_out
+  integer                                 :: i,j, k, Nx, Ny 
   
-  N=size(Ap_in,1)
+  Nx=size(Ap_in,1)
+  Ny=size(Ap_in,2)
   
-  do i = 0, N-1
-    do j = 0, N-1
-      A_csr_out%nzval(coo2node_2d(i,j)) = Ap_in(i,j)
-    end do  
+  A_csr_out%rowpnt(1) = 1
+  
+  k=0
+  do j = 1, Ny
+    do i = 1, Nx
+      
+      if(i==1 .or. i==Nx .or. j==1 .or. j==Ny) then ! border check
+        
+        k = k+1
+        A_csr_out%nzval(k)  = 1.0_dp
+        A_csr_out%colind(k) = k
+        
+        k = k+1
+        A_csr_out%nzval(k)  = 0.0_dp
+        A_csr_out%colind(k) = coo2node_2d(i+1,j)
+        
+        k = k+1
+        A_csr_out%nzval(k)  = 0.0_dp
+        A_csr_out%colind(k) = coo2node_2d(i,j+1)
+        
+        k = k+1
+        A_csr_out%nzval(k)  = 0.0_dp
+        A_csr_out%colind(k) = coo2node_2d(i-1,j)
+        
+        k = k+1
+        A_csr_out%nzval(k)  = 0.0_dp
+        A_csr_out%colind(k) = coo2node_2d(i,j)
+        
+      else
+        
+        k = k+1
+        A_csr_out%nzval(k)  = Ap_in(i,j)
+        A_csr_out%colind(k) = k
+        
+        k = k+1
+        A_csr_out%nzval(k)  = Ae_in(i,j)
+        A_csr_out%colind(k) = coo2node_2d(i+1,j)
+        
+        k = k+1
+        A_csr_out%nzval(k)  = An_in(i,j)
+        A_csr_out%colind(k) = coo2node_2d(i,j+1)
+        
+        k = k+1
+        A_csr_out%nzval(k)  = Aw_in(i,j)
+        A_csr_out%colind(k) = coo2node_2d(i-1,j)
+        
+        k = k+1
+        A_csr_out%nzval(k)  = As_in(i,j)
+        A_csr_out%colind(k) = coo2node_2d(i,j)
+        
+      end if
+      
+      A_csr_out%rowpnt(coo2node_2d(i,j)) = k+1
+      
+    end do
   end do
   
   contains
@@ -182,7 +234,7 @@
       integer, intent(in) :: i,j
       integer :: node
      
-      node = (j-1)*N + i
+      node = (j-1)*Nx + i
       
     end function coo2node_2d
     
@@ -191,8 +243,8 @@
       integer, intent(in) :: node
       integer, dimension(0:1) :: ind
       
-      ind(0) = mod(node,N)
-      ind(1) = node/N + 1
+      ind(0) = mod(node,Nx)
+      ind(1) = node/Nx + 1
       
     end function
    
