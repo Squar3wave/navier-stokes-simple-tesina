@@ -70,13 +70,13 @@
    real(dp), dimension(:,:), allocatable, public   :: Ap, Ae, As,  An, Aw
    real(dp), dimension(:,:), allocatable, public   :: invAp
    real(dp), dimension(:,:,:), allocatable, public :: Sp
-   type(rCSR), public                              :: A_csr
-   real(dp), dimension(:), allocatable, public     :: x_gmres, b_gmres, error 
    
+   
+   ! GMRES stuff
    
    ! exact solutions:
-   real :: x_exct(0:16), v_exct(0:16)
-   real :: y_exct(0:16), u_exct(0:16)
+   real :: x_exct(17), v_exct(17)
+   real :: y_exct(17), u_exct(17)
  
    logical, public :: readstart
    character(64), public :: filename
@@ -95,6 +95,7 @@
   ! MY CODE ADDITIONS
   !---------------------------------------------------------------------------
 
+ 
   subroutine file_reader(out_var, path_name, path_len)
 
     integer                                        :: strlen, rows, cols, i, io
@@ -148,9 +149,9 @@
     !print *, 'Number of rows:   ', rows
     !print *, 'Number of columns:', cols
 
-    allocate(x(0:(rows-1),0:(cols-1)))
+    allocate(x(rows,cols))
 
-    do I=0,rows-1,1
+    do I=1,rows,1
       read(49,*) x(I,:)
     end do
 
@@ -249,6 +250,8 @@
     end function
    
   end subroutine
+
+  
   
   !---------------------------------------------------------------------------
   !---------------------------------------------------------------------------
@@ -483,7 +486,7 @@
     integer                                :: i
     character(23)                          :: xexact_data_path, vexact_data_path, &
                                               yexact_data_path, uexact_data_path
-    character(len=dp), dimension(0:16,0:1) :: data
+    character(len=dp), dimension(17,2) :: data
     
     xexact_data_path="input_files/x_exact.dat"
     vexact_data_path="input_files/v_exact.dat"
@@ -492,8 +495,8 @@
   
     call file_reader(data, xexact_data_path, len(xexact_data_path))
     
-    do i=0,16
-      read(data(i,1), '(f10.0)') x_exct(i)
+    do i=1,17
+      read(data(i,2), '(f10.0)') x_exct(i)
     end do
     
     x_exct = x_exct + 0.5_dp
@@ -501,16 +504,16 @@
     
     call file_reader(data, vexact_data_path, len(vexact_data_path))
     
-    do i=0,16
-      read(data(i,1), '(f10.0)') v_exct(i)
+    do i=1,17
+      read(data(i,2), '(f10.0)') v_exct(i)
     end do
     
     
     
     call file_reader(data, yexact_data_path, len(yexact_data_path))
     
-    do i=0,16
-      read(data(i,1), '(f10.0)') y_exct(i)
+    do i=1,17
+      read(data(i,2), '(f10.0)') y_exct(i)
     end do
     
     y_exct = y_exct + 0.5_dp
@@ -518,8 +521,8 @@
     
     call file_reader(data, uexact_data_path, len(uexact_data_path))
     
-    do i=0,16
-      read(data(i,1), '(f10.0)') u_exct(i)
+    do i=1,17
+      read(data(i,2), '(f10.0)') u_exct(i)
     end do
     
     
@@ -616,7 +619,7 @@
     !WRITE (23,*)' ZONE F=POINT, I=', 17
 
      	
-    DO i=0,10     
+    DO i=1,17     
       WRITE (23,*) x_exct(i), v_exct(i)
     ENDDO   
     close(23)
@@ -624,7 +627,7 @@
     ! ------------------------------------------- 
     open (23,file='Exact_U.dat') 
     !WRITE (23,*)' ZONE F=POINT, I=', 17
-     DO j=0,16       
+     DO j=1,17       
        WRITE (23,*) y_exct(j), u_exct(j)
     ENDDO
     close(23)

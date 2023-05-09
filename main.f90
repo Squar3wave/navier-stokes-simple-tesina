@@ -20,7 +20,8 @@
 Program Main
   use matdef
   use common
-  use solvers 
+  use solvers
+  use gmres_solver
   implicit none
   
   integer                               :: Niter, &
@@ -29,10 +30,9 @@ Program Main
   character(64)                         :: arg
   character(1)                          :: ch
   character(26)                         :: input_data_path
-  character(len=dp), dimension(0:9,0:1) :: input_data
+  character(len=dp), dimension(10,2)    :: input_data
   character(25)                         :: grid_data_path
-  character(len=dp), dimension(0:4,0:1) :: grid_data  
-  character(5)                          :: solv_choice
+  character(len=dp), dimension(5,2)     :: grid_data  
 
   !--------------------------------------------------------------------------
   ! Reading input data from file
@@ -45,17 +45,19 @@ Program Main
 
   call file_reader(input_data, input_data_path, len(input_data_path))
 
-  read(input_data(0,1), '(f10.0)') Re
-  read(input_data(1,1), '(i10.0)') Niter
-  read(input_data(3,1), '(f10.0)') alfa
-  read(input_data(4,1), '(f10.0)') beta
-  read(input_data(5,1), '(f10.0)') omega
-  read(input_data(6,1), '(f10.0)') Poiss_acc
-  read(input_data(7,1), '(i10.0)') Poiss_iter
+  read(input_data(1,2), '(f10.0)') Re
+  read(input_data(2,2), '(i10.0)') Niter
+  read(input_data(4,2), '(f10.0)') alfa
+  read(input_data(5,2), '(f10.0)') beta
+  read(input_data(6,2), '(f10.0)') omega
+  read(input_data(7,2), '(f10.0)') Poiss_acc
+  read(input_data(8,2), '(i10.0)') Poiss_iter
+
+  read(input_data(2,2), '(i10.0)') max_iter
   
-  mode        = input_data(2,1)
-  ch          = input_data(8,1)
-  solv_choice = input_data(9,1)
+  mode        = input_data(3,2)
+  ch          = input_data(9,2)
+  solv_choice = input_data(10,2)
   
   readstart = .false.
 
@@ -72,11 +74,11 @@ Program Main
   
   call file_reader(grid_data, grid_data_path, len(grid_data_path))
 
-  read(grid_data(0,1), '(i10.0)') NXmax
-  read(grid_data(1,1), '(i10.0)') NYmax
-  read(grid_data(2,1), '(i10.0)') NX_center
-  read(grid_data(3,1), '(i10.0)') X_length
-  read(grid_data(4,1), '(i10.0)') Y_length
+  read(grid_data(1,2), '(i10.0)') NXmax
+  read(grid_data(2,2), '(i10.0)') NYmax
+  read(grid_data(3,2), '(i10.0)') NX_center
+  read(grid_data(4,2), '(i10.0)') X_length
+  read(grid_data(5,2), '(i10.0)') Y_length
   
   if (trim(arg)=='CDS')  mode = 'C'
   if (trim(arg)=='UPD')  mode = 'U'
