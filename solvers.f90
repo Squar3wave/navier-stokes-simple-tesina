@@ -30,10 +30,79 @@ module solvers
   public :: solve_pressure_correction   !correzioni sul campo di pressione
   public :: solve_uv   !calcolo delle componenti del campo di velocità
   
-  character(5),public :: solv_choice
+  character(5), public  :: solv_choice
+  character, public     :: prec
+  type(rCSR)            :: A_csr
+  real(dp), allocatable :: x_gmres(:), b_gmres(:)
+  integer, public       :: max_iter, Nrow
+  real(dp)              :: error
 
 
 contains
+
+  subroutine apply_constraint_gmres(nf)
+    
+    integer :: i, j
+    integer, intent(in) :: nf 
+    
+    Sp(1:NXmax+1,:,nf)       = F(1:NXmax+1,:,nf)
+    Sp(1:NXmax+1,NYmax+1,nf) = F(1:NXmax+1,NYmax+1,nf)
+    Sp(:,NYmax+1,nf)         = F(:,NYmax+1,nf)
+    Sp(NXmax+1,1:NYmax+1,nf) = F(NXmax+1,1:NYmax+1,nf)
+    
+  end subroutine
+
+  subroutine gmres_preliminary()
+    
+!     print *, "======================="
+!     print *, "preliminary procedures"
+!     print *, "======================="
+!     print *,""
+!     
+!     print *, "checking if CSR is already allocated"
+!     print *,""
+    
+    if(.not. allocated(A_csr%nzval)) then
+!       print *, "create CSR"
+      call create(A_csr, Nrow, 5*Nrow)
+!       print *, "done"
+!       print *,""
+    else
+!       print *,"A_csr already allocated"
+!       print *,""
+    end if
+    
+!     print *, "apply costraints"
+    call apply_constraint_gmres(1)
+!     print *, "done"
+!     print *,""
+    
+!     print *, "convert matrix to CRS"
+    call convert2csr(Ap,Ae,An,As,Aw, A_csr)
+!     print *, "done"
+!     print *,""
+    
+!     print *, "checking if vectors are already allocated"
+    if(.not. allocated(x_gmres) .and. .not. allocated(b_gmres)) then
+!       print *, "allocating x"
+      allocate(x_gmres(Nrow))
+!       print *, "allocating b"
+      allocate(b_gmres(Nrow))
+    else
+!       print *, "vectors already allocated"
+    end if
+    
+!     print *, "done"
+!     print *,""
+    
+!     print *, "reshape arrays"
+    x_gmres(:) = reshape( F(:,:,1), shape=[size( F(:,:,1))])
+    b_gmres(:) = reshape(Sp(:,:,1), shape=[size(Sp(:,:,1))])
+!     print *, "done"
+!     print *,""
+    
+  end subroutine  
+
 
 !------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   
@@ -308,14 +377,11 @@ contains
       
       
       Nrow=size(F(:,:,1))
-      
-      
       call gmres_preliminary()
-      call gmres(A_csr, b_gmres, x_gmres, error, max_iter, 1e3_dp)
+      call allocate_gmres_stuff(size(x_gmres),max_iter)
+      call gmres(A_csr, b_gmres, x_gmres, max_iter, 1e-3_dp, prec,error)
       
-!       do i=1, size(x_gmres)
-!         print *, x_gmres(i), error(i)
-!       end do
+      print *, "gmres error= ",error
       
       
    else

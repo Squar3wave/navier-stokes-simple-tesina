@@ -30,7 +30,7 @@ Program Main
   character(64)                         :: arg
   character(1)                          :: ch
   character(26)                         :: input_data_path
-  character(len=dp), dimension(10,2)    :: input_data
+  character(len=dp), dimension(11,2)    :: input_data
   character(25)                         :: grid_data_path
   character(len=dp), dimension(5,2)     :: grid_data  
 
@@ -58,6 +58,7 @@ Program Main
   mode        = input_data(3,2)
   ch          = input_data(9,2)
   solv_choice = input_data(10,2)
+  prec        = input_data(11,2)
   
   readstart = .false.
 

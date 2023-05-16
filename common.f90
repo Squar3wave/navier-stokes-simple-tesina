@@ -221,7 +221,6 @@
         k = k+1
         A_csr_out%nzval(k)  = As_in(i,j)
         A_csr_out%colind(k) = coo2node_2d(i,j)
-        
       end if
       
       A_csr_out%rowpnt(coo2node_2d(i,j)) = k+1

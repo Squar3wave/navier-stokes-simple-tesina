@@ -13,7 +13,8 @@ SOURCES1 = common.f90 \
 	   main.f90\
 	   adj_map.f90 \
 	   matdef.f90 \
-	   sparsealg.f90
+	   sparsealg.f90\
+	   preconditioners.f90
 
 OBJS1 = $(SOURCES1:.f90=.o)
 LIBS = -llapack
@@ -34,8 +35,9 @@ clean:
 cleandat:
 	rm *.dat *.txt *.raw 
 
-sparsealg.o: matdef.o
-common.o:    matdef.o sparsealg.o
-gmres.o :    matdef.o sparsealg.o common.o
-solvers.o :  matdef.o sparsealg.o common.o gmres.o
-main.o :     matdef.o sparsealg.o common.o gmres.o solvers.o
+preconditioners.o: matdef.o
+sparsealg.o:       matdef.o
+common.o:          matdef.o sparsealg.o
+gmres.o :          matdef.o sparsealg.o common.o preconditioners.o
+solvers.o :        matdef.o sparsealg.o common.o gmres.o
+main.o :           matdef.o sparsealg.o common.o gmres.o solvers.o
